@@ -89,7 +89,14 @@
 				var code = e.target.value;
 				var flagid = e.target.dataset.flagid;
 				console.log('Update Name to: ' + code);
-				db.ref('ctf/' + CONTEST_ID + '/flags/' + flagid + '/code').set(code);
+				db.ref('ctf/' + CONTEST_ID + '/flags/' + flagid).once('value', (snapshot) => {
+					var flag = snapshot.val();
+						flag.code = code;
+					var prom = db.ref('ctf/' + CONTEST_ID + '/flags/' + code).set(flag);
+					prom.then(d => {
+						db.ref('ctf/' + CONTEST_ID + '/flags/' + flagid).remove();
+					});
+				});
 			}
 
 			function updateFlagName(e){
