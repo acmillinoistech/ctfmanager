@@ -90,8 +90,8 @@
 					});
 				board.appendChild(header);
 
-				for(var t in teams){
-					var team = teams[t];
+				for(var t in teamData){
+					var team = teams[t] || {};
 					var row = document.createElement('tr');
 
 					var content = ['Rank', 'Team', 'Points'];
