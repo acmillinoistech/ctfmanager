@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Illinois Tech ACM</title>
+		<script src="https://www.gstatic.com/firebasejs/3.7.3/firebase.js"></script>
+		<script>
+
+			var config = {
+			apiKey: "AIzaSyCGWEpvuy4sPR3n5xzwfATLzyMDvwE6tOY",
+			authDomain: "illinois-tech-acm.firebaseapp.com",
+			databaseURL: "https://illinois-tech-acm.firebaseio.com",
+			storageBucket: "illinois-tech-acm.appspot.com",
+			messagingSenderId: "344533734310"
+			};
+
+			firebase.initializeApp(config);
+
+		</script>
+		<style type="text/css">
+
+			table th, table td {
+				text-align: center;
+			}
+
+			table th:nth-child(1), table th:nth-child(2), table th:nth-child(3) {
+				text-align: left;
+			}
+
+			table td:nth-child(2) {
+				text-align: left;
+			}
+
+		</style>
+	</head>
+	<body>
+		
+		<h1>Leaderboard</h1>
+		<h2 id="contest-name">Loading...</h2>
+		<div id="score-board">
+			<div>Loading...</div>
+		</div>
+		
+		<script type="text/javascript">
+
+			var CONTEST_ID = 'clarity2017'; // prompt('Enter Contest ID.');
+
+			var db = firebase.database();
+
+			db.ref('ctf/' + CONTEST_ID + '/teams').once('value', (teamData) => {
+
+				db.ref('ctf/' + CONTEST_ID + '/flags').once('value', (snapshot) => {
+
+					var flags = snapshot.val();
+
+					db.ref('ctf/' + CONTEST_ID + '/submissions').on('value', (snap) => {
+						var submissions = snap.val();
+						var board = renderScoreBoard(submissions, flags, teamData.val());
+						var scoreBoard = document.getElementById('score-board')
+						scoreBoard.replaceChild(board, scoreBoard.children[0]);
+					});
+
+				});
+
+			});
+
+			db.ref('ctf/' + CONTEST_ID + '/details').once('value', (snapshot) => {
+				var contestName = document.getElementById('contest-name');
+				contestName.innerText = snapshot.val().name;
+			});
+
+			function on(node, event, fn){
+				node.addEventListener(event, fn);
+			}
+
+			function renderScoreBoard(teams, flags, teamData){
+				var board = document.createElement('table');
+
+				var header = document.createElement('tr');
+				var labels = ['Rank', 'Team', 'Points'];
+					labels.forEach(l => {
+						var th = document.createElement('th');
+						th.innerText = l;
+						header.appendChild(th);
+					});
+				var codes = Object.keys(flags);
+					codes.forEach(c => {
+						var th = document.createElement('th');
+						th.innerText = flags[c].code;
+						header.appendChild(th);
+					});
+				board.appendChild(header);
+
+				for(var t in teams){
+					var team = teams[t];
+					var row = document.createElement('tr');
+
+					var content = ['Rank', 'Team', 'Points'];
+					var total = 0;
+
+					var scores = codes.map(f => {
+						var correct = false;
+						var attempts = team[f] || [];
+						Object.keys(attempts).forEach(aid => {
+							var s = team[f][aid];
+							if(s.correct){
+							//if(s.answer === flags[f].answer){
+								correct = true;
+							}
+						});
+						var score = correct ? parseInt(flags[f].points, 10) : 0;
+						total += score;
+						return score;
+					}).map(p => {
+						var score = document.createElement('p');
+							score.innerText = p;
+						return score;
+					});
+
+					var rank = document.createElement('p');
+						rank.innerText = 0;
+						content[0] = rank;
+
+					var teamName = document.createElement('p');
+						teamName.innerText = teamData[t].name;
+						content[1] = teamName;
+
+					var totalScore = document.createElement('p');
+						totalScore.innerText = total;
+						content[2] = totalScore;
+
+					content.push.apply(content, scores);
+
+					content.forEach(c => {
+						var cell = document.createElement('td');
+						cell.appendChild(c);
+						row.appendChild(cell);
+					});
+					board.appendChild(row);
+				}
+
+				return board;
+			}
+
+		</script>
+
+	</body>
+</html>
