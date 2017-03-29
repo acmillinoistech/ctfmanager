@@ -29,9 +29,12 @@ function main(renderDiffs, fakeTeams){
 						else{
 							console.error('Invalid team id.');
 						}
-						setTimeout(() => {
-							render(submissionSnap.val(), teamSnap.val(), flagSnap.val(), renderDiffs, fakeTeams);
-						}, timeOut || 0);
+						return new Promise((resSim, rejSim) => {
+							setTimeout(() => {
+								var board = render(submissionSnap.val(), teamSnap.val(), flagSnap.val(), renderDiffs, fakeTeams);
+								resSim(board);
+							}, timeOut || 0);
+						});
 					}
 
 					resolve({
@@ -82,8 +85,14 @@ function render(submissions, teamData, flags, renderDiffs, fakeTeams){
 
 function getTeamDiffs(oldList, nowList){
 
-	var oldTeams = listToObj(oldList, item => item.details.id);
-	var nowTeams = listToObj(nowList, item => item.details.id);
+	var getKey = item => item.details.id;
+	var addRank = (item, idx) => {
+		item.rank = (idx + 1);
+		return item;
+	}
+
+	var oldTeams = listToObj(oldList, getKey, addRank);
+	var nowTeams = listToObj(nowList, getKey, addRank);
 
 	var diffs = [];
 
@@ -91,12 +100,21 @@ function getTeamDiffs(oldList, nowList){
 		var now = nowTeams[t];
 		var old = oldTeams[t];
 		if(now && old){
+			if(now.rank !== old.rank){
+				diffs.push({
+					type: 'rank',
+					team: t,
+					before: old.rank,
+					after: now.rank
+				});
+			}
 			for(var f in now.scores){
 				var ns = now.scores[f];
 				var os = old.scores[f];
 				if(ns !== os){
 					console.log(t, f, os, '->', ns);
 					diffs.push({
+						type: 'score',
 						team: t,
 						flag: f,
 						before: os,
@@ -111,10 +129,10 @@ function getTeamDiffs(oldList, nowList){
 
 }
 
-function listToObj(list, key){
+function listToObj(list, key, transform){
 	var obj = {};
-	list.forEach(item => {
-		obj[key(item)] = item;
+	list.forEach((item, idx) => {
+		obj[key(item, idx)] = transform(item, idx);
 	});
 	return obj;
 }
