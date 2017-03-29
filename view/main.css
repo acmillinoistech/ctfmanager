@@ -1,0 +1,11 @@
+table th, table td {
+	text-align: center;
+}
+
+table th:nth-child(1), table th:nth-child(2), table th:nth-child(3) {
+	text-align: left;
+}
+
+table td:nth-child(2) {
+	text-align: left;
+}
