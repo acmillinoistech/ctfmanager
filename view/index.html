@@ -54,7 +54,9 @@
 
 					db.ref('ctf/' + CONTEST_ID + '/submissions').on('value', (snap) => {
 						var submissions = snap.val();
-						var board = renderScoreBoard(submissions, flags, teamData.val());
+						var teamList = getTeamList(submissions, flags, teamData.val());
+						console.log(teamList)
+						var board = renderScoreBoard(teamList, flags);
 						var scoreBoard = document.getElementById('score-board')
 						scoreBoard.replaceChild(board, scoreBoard.children[0]);
 					});
@@ -72,7 +74,45 @@
 				node.addEventListener(event, fn);
 			}
 
-			function renderScoreBoard(teams, flags, teamData){
+			function getTeamList(teams, flags, teamData){
+				return Object.keys(teamData).filter(t => teamData[t] ? true : false).map(t => {
+
+					var team = teams[t] || {};
+					var total = 0;
+					var scores = {};
+
+					for(var f in flags){
+						var correct = false;
+						var attempts = team[f] || [];
+						Object.keys(attempts).forEach(aid => {
+							var s = team[f][aid];
+							if(s.correct){
+							//if(s.answer === flags[f].answer){
+								correct = true;
+							}
+						});
+						var score = correct ? parseInt(flags[f].points, 10) : 0;
+						total += score;
+						scores[f] = score;
+					}
+
+					return {
+						details: teamData[t],
+						total: total,
+						scores: scores
+					}
+
+				}).sort((a, b) => {
+					if(a.total === b.total){
+						return b.total - a.total;
+					}
+					else{
+						return 0;
+					}
+				});
+			}
+
+			function renderScoreBoard(teamList, flags){
 				var board = document.createElement('table');
 
 				var header = document.createElement('tr');
@@ -90,45 +130,31 @@
 					});
 				board.appendChild(header);
 
-				for(var t in teamData){
-					var team = teams[t] || {};
+				for(var t = 0; t < teamList.length; t++){
+
+					var team = teamList[t];
+
 					var row = document.createElement('tr');
-
 					var content = ['Rank', 'Team', 'Points'];
-					var total = 0;
-
-					var scores = codes.map(f => {
-						var correct = false;
-						var attempts = team[f] || [];
-						Object.keys(attempts).forEach(aid => {
-							var s = team[f][aid];
-							if(s.correct){
-							//if(s.answer === flags[f].answer){
-								correct = true;
-							}
-						});
-						var score = correct ? parseInt(flags[f].points, 10) : 0;
-						total += score;
-						return score;
-					}).map(p => {
-						var score = document.createElement('p');
-							score.innerText = p;
-						return score;
-					});
 
 					var rank = document.createElement('p');
-						rank.innerText = 0;
+						rank.innerText = (t+1);
 						content[0] = rank;
 
 					var teamName = document.createElement('p');
-						teamName.innerText = teamData[t].name;
+						teamName.innerText = team.details.name;
 						content[1] = teamName;
 
 					var totalScore = document.createElement('p');
-						totalScore.innerText = total;
+						totalScore.innerText = team.total;
 						content[2] = totalScore;
 
-					content.push.apply(content, scores);
+					var codeScores = codes.map(fid => team.scores[fid]).map(score => {
+						var node = document.createElement('p');
+						node.innerText = score;
+						return node;
+					});
+					content.push.apply(content, codeScores);
 
 					content.forEach(c => {
 						var cell = document.createElement('td');
