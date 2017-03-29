@@ -50,6 +50,29 @@
 			}
 
 			/*
+			 * Pass this function into the main method (or not) to handle changes
+			 * Argument is a list of scoreboard changes
+			 * - Diffs include properties: team, flag, before, after
+			 */
+
+			function renderDiffs(diffs){
+				diffs.forEach(diff => {
+					var row = document.querySelector('[data-team="' + diff.team + '"]');
+					var cell = row.querySelector('[data-flag="' + diff.flag + '"]');
+					flashElement(cell)
+				});
+			}
+
+			function flashElement(el){
+				el.style.background = 'black';
+				el.style.color = 'white';
+				setTimeout(() => {
+					el.style.background = 'transparent';
+					el.style.color = 'black';
+				}, 750);
+			}
+
+			/*
 			 * Pass the fake teams into the main method (or not) to display scores
 			 * main() returns a promise with a `simulator` function as its argument
 			 * the `simulator` function takes four arguments:
@@ -59,13 +82,13 @@
 			 * - returned as `board`
 			 */
 
-			main(FAKE_TEAMS).then(response => {
+			main(renderDiffs, FAKE_TEAMS).then(response => {
 
 				var simulateSubmission = response.simulator;
 				var scoreBoard = response.board;
 
-				simulateSubmission('fake1', '12c', {correct: true}, 2000);
-				simulateSubmission('fake1', '12d', {correct: true}, 4000);
+				simulateSubmission('fake1', '12c', {correct: true}, 1000);
+				//simulateSubmission('fake1', '12d', {correct: true}, 4000);
 
 			});
 

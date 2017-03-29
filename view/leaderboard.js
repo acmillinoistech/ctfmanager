@@ -1,4 +1,4 @@
-function main(fakeTeams){
+function main(renderDiffs, fakeTeams){
 
 	return new Promise((resolve, reject) => {
 
@@ -17,7 +17,7 @@ function main(fakeTeams){
 
 				db.ref('ctf/' + CONTEST_ID + '/submissions').on('value', (submissionSnap) => {
 
-					var board = render(submissionSnap.val(), teamSnap.val(), flagSnap.val(), fakeTeams);
+					var board = render(submissionSnap.val(), teamSnap.val(), flagSnap.val(), renderDiffs, fakeTeams);
 
 					var simulateSubmission = (teamId, flagId, submissionObj, timeOut) => {
 						if(fakeTeams[teamId]){
@@ -30,7 +30,7 @@ function main(fakeTeams){
 							console.error('Invalid team id.');
 						}
 						setTimeout(() => {
-							render(submissionSnap.val(), teamSnap.val(), flagSnap.val(), fakeTeams);
+							render(submissionSnap.val(), teamSnap.val(), flagSnap.val(), renderDiffs, fakeTeams);
 						}, timeOut || 0);
 					}
 
@@ -49,7 +49,9 @@ function main(fakeTeams){
 
 }
 
-function render(submissions, teamData, flags, fakeTeams){
+var oldTeamList = false;
+
+function render(submissions, teamData, flags, renderDiffs, fakeTeams){
 
 	// Room to Add Sample Teams:
 
@@ -66,10 +68,56 @@ function render(submissions, teamData, flags, fakeTeams){
 	var scoreBoard = document.getElementById('score-board')
 	scoreBoard.replaceChild(board, scoreBoard.children[0]);
 
+	if(renderDiffs){
+		if(oldTeamList){
+			var teamDiffs = getTeamDiffs(oldTeamList, teamList);
+				renderDiffs(teamDiffs);
+		}
+		oldTeamList = teamList;
+	}
+
 	return board;
 
 }
 
+function getTeamDiffs(oldList, nowList){
+
+	var oldTeams = listToObj(oldList, item => item.details.id);
+	var nowTeams = listToObj(nowList, item => item.details.id);
+
+	var diffs = [];
+
+	for(var t in nowTeams){
+		var now = nowTeams[t];
+		var old = oldTeams[t];
+		if(now && old){
+			for(var f in now.scores){
+				var ns = now.scores[f];
+				var os = old.scores[f];
+				if(ns !== os){
+					console.log(t, f, os, '->', ns);
+					diffs.push({
+						team: t,
+						flag: f,
+						before: os,
+						after: ns
+					});
+				}
+			}
+		}
+	}
+
+	return diffs;
+
+}
+
+function listToObj(list, key){
+	var obj = {};
+	list.forEach(item => {
+		obj[key(item)] = item;
+	});
+	return obj;
+}
 
 function on(node, event, fn){
 	node.addEventListener(event, fn);
@@ -99,6 +147,8 @@ function getTeamList(teams, flags, teamData){
 			total += score;
 			scores[f] = score;
 		}
+
+		teamData[t].id = t;
 
 		return {
 			details: teamData[t],
@@ -139,6 +189,7 @@ function renderScoreBoard(teamList, flags){
 		var team = teamList[t];
 
 		var row = document.createElement('tr');
+			row.dataset.team = team.details.id;
 		var content = ['Rank', 'Team', 'Points'];
 
 		var rank = document.createElement('p');
@@ -153,9 +204,15 @@ function renderScoreBoard(teamList, flags){
 			totalScore.innerText = team.total;
 			content[2] = totalScore;
 
-		var codeScores = codes.map(fid => team.scores[fid]).map(score => {
+		var codeScores = codes.map(fid => {
+			return {
+				flag: fid,
+				score: team.scores[fid]
+			}
+		}).map(code => {
 			var node = document.createElement('p');
-			node.innerText = score || 0;
+				node.dataset.flag = code.flag;
+				node.innerText = code.score || 0;
 			return node;
 		});
 		content.push.apply(content, codeScores);
