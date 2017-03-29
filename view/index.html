@@ -46,7 +46,7 @@
 
 			var db = firebase.database();
 
-			db.ref('ctf/' + CONTEST_ID + '/teams').once('value', (teamData) => {
+			db.ref('ctf/' + CONTEST_ID + '/teams').once('value', (teamSnap) => {
 
 				db.ref('ctf/' + CONTEST_ID + '/flags').once('value', (snapshot) => {
 
@@ -54,8 +54,17 @@
 
 					db.ref('ctf/' + CONTEST_ID + '/submissions').on('value', (snap) => {
 						var submissions = snap.val();
-						var teamList = getTeamList(submissions, flags, teamData.val());
-						console.log(teamList)
+						var teamData = teamSnap.val();
+
+						// Room to Add Sample Teams:
+
+						submissions['arb'] = {
+							'12a': {arb1: {correct: true}},
+							'12b': {arb1: {correct: true}}
+						}
+						teamData['arb'] = {name: 'Fake Team'}
+
+						var teamList = getTeamList(submissions, flags, teamData);
 						var board = renderScoreBoard(teamList, flags);
 						var scoreBoard = document.getElementById('score-board')
 						scoreBoard.replaceChild(board, scoreBoard.children[0]);
@@ -75,6 +84,9 @@
 			}
 
 			function getTeamList(teams, flags, teamData){
+				function countNonZeroScores(map){
+					return Object.keys(map).map(k => map[k]).filter(m => m !== 0).length;
+				}
 				return Object.keys(teamData).filter(t => teamData[t] ? true : false).map(t => {
 
 					var team = teams[t] || {};
@@ -107,7 +119,7 @@
 						return b.total - a.total;
 					}
 					else{
-						return 0;
+						return countNonZeroScores(b.scores) - countNonZeroScores(a.scores);
 					}
 				});
 			}
@@ -151,7 +163,7 @@
 
 					var codeScores = codes.map(fid => team.scores[fid]).map(score => {
 						var node = document.createElement('p');
-						node.innerText = score;
+						node.innerText = score || 0;
 						return node;
 					});
 					content.push.apply(content, codeScores);
