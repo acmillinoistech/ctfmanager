@@ -111,10 +111,12 @@ function getTeamDiffs(oldList, nowList){
 			for(var f in now.scores){
 				var ns = now.scores[f];
 				var os = old.scores[f];
-				if(ns !== os){
+				var na = now.attempts[f];
+				var oa = old.attempts[f];
+				if(ns !== os || na !== oa){
 					console.log(t, f, os, '->', ns);
 					diffs.push({
-						type: 'score',
+						type: 'attempt',
 						team: t,
 						flag: f,
 						before: os,
@@ -150,11 +152,14 @@ function getTeamList(teams, flags, teamData){
 		var team = teams[t] || {};
 		var total = 0;
 		var scores = {};
+		var attempts = {};
 
 		for(var f in flags){
 			var correct = false;
-			var attempts = team[f] || [];
-			Object.keys(attempts).forEach(aid => {
+			var submissions = team[f] || [];
+				attempts[f] = 0;
+			Object.keys(submissions).forEach(aid => {
+				attempts[f]++;
 				var s = team[f][aid];
 				if(s.correct){
 				//if(s.answer === flags[f].answer){
@@ -171,7 +176,8 @@ function getTeamList(teams, flags, teamData){
 		return {
 			details: teamData[t],
 			total: total,
-			scores: scores
+			scores: scores,
+			attempts: attempts
 		}
 
 	}).sort((a, b) => {
