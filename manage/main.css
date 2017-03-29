@@ -1,0 +1,31 @@
+table th {
+	text-align: left;
+}
+
+table td {
+	vertical-align: top;
+}
+
+#flag-board table td:nth-child(1) input {
+	width: 50px;
+}
+
+#flag-board table td:nth-child(2) input {
+	width: 175px;
+}
+
+#flag-board table td:nth-child(3) textarea {
+	width: 250px;
+}
+
+#flag-board table td:nth-child(4) input {
+	width: 50px;
+}
+
+#flag-board table td:nth-child(5) input {
+	width: 50px;
+}
+
+#flag-board table td:nth-child(6) input {
+	width: 100px;
+}
