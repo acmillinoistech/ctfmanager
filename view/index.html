@@ -18,17 +18,7 @@
 		</script>
 		<style type="text/css">
 
-			table th, table td {
-				text-align: center;
-			}
 
-			table th:nth-child(1), table th:nth-child(2), table th:nth-child(3) {
-				text-align: left;
-			}
-
-			table td:nth-child(2) {
-				text-align: left;
-			}
 
 		</style>
 	</head>
@@ -39,145 +29,91 @@
 		<div id="score-board">
 			<div>Loading...</div>
 		</div>
+
+		<script type="text/javascript" src="leaderboard.js"></script>
 		
 		<script type="text/javascript">
 
-			var CONTEST_ID = 'clarity2017'; // prompt('Enter Contest ID.');
+			/*
+			 * You can populate fake teams like so:
+			 * Use this to help visualize the leaderboard with actual data
+			 */
 
-			var db = firebase.database();
-
-			db.ref('ctf/' + CONTEST_ID + '/teams').once('value', (teamSnap) => {
-
-				db.ref('ctf/' + CONTEST_ID + '/flags').once('value', (snapshot) => {
-
-					var flags = snapshot.val();
-
-					db.ref('ctf/' + CONTEST_ID + '/submissions').on('value', (snap) => {
-						var submissions = snap.val();
-						var teamData = teamSnap.val();
-
-						// Room to Add Sample Teams:
-
-						submissions['arb'] = {
-							'12a': {arb1: {correct: true}},
-							'12b': {arb1: {correct: true}}
-						}
-						teamData['arb'] = {name: 'Fake Team'}
-
-						var teamList = getTeamList(submissions, flags, teamData);
-						var board = renderScoreBoard(teamList, flags);
-						var scoreBoard = document.getElementById('score-board')
-						scoreBoard.replaceChild(board, scoreBoard.children[0]);
-					});
-
-				});
-
-			});
-
-			db.ref('ctf/' + CONTEST_ID + '/details').once('value', (snapshot) => {
-				var contestName = document.getElementById('contest-name');
-				contestName.innerText = snapshot.val().name;
-			});
-
-			function on(node, event, fn){
-				node.addEventListener(event, fn);
+			var FAKE_TEAMS = {
+				'fake1': {
+					name: 'Fake Team 1',
+					submissions: {
+						'12a': [{correct: true}],
+						'12b': [{correct: true}]
+					}
+				}
 			}
 
-			function getTeamList(teams, flags, teamData){
-				function countNonZeroScores(map){
-					return Object.keys(map).map(k => map[k]).filter(m => m !== 0).length;
-				}
-				return Object.keys(teamData).filter(t => teamData[t] ? true : false).map(t => {
+			/*
+			 * Pass this function into the main method (or not) to handle changes
+			 * Argument is a list of scoreboard changes
+			 * - Change in Score gives: team, flag, before, after
+			 * - Change in Rank gives: team, before, after
+			 */
 
-					var team = teams[t] || {};
-					var total = 0;
-					var scores = {};
-
-					for(var f in flags){
-						var correct = false;
-						var attempts = team[f] || [];
-						Object.keys(attempts).forEach(aid => {
-							var s = team[f][aid];
-							if(s.correct){
-							//if(s.answer === flags[f].answer){
-								correct = true;
+			function renderDiffs(diffs){
+				diffs.forEach(diff => {
+					switch(diff.type){
+						case 'attempt':
+							var row = document.querySelector('[data-team="' + diff.team + '"]');
+							var cell = row.querySelector('[data-flag="' + diff.flag + '"]');
+							var delta = diff.after - diff.before;
+							var color = (delta > 0) ? 'green' : 'red';
+							flashElement(cell, color)
+							break;
+						case 'rank':
+							var row = document.querySelector('[data-team="' + diff.team + '"]');
+							var delta = diff.after - diff.before;
+							if(delta < 0){
+								flashElement(row, 'green')
 							}
-						});
-						var score = correct ? parseInt(flags[f].points, 10) : 0;
-						total += score;
-						scores[f] = score;
-					}
-
-					return {
-						details: teamData[t],
-						total: total,
-						scores: scores
-					}
-
-				}).sort((a, b) => {
-					if(a.total === b.total){
-						return b.total - a.total;
-					}
-					else{
-						return countNonZeroScores(b.scores) - countNonZeroScores(a.scores);
+							break;
+						default:
+							break;
 					}
 				});
 			}
 
-			function renderScoreBoard(teamList, flags){
-				var board = document.createElement('table');
-
-				var header = document.createElement('tr');
-				var labels = ['Rank', 'Team', 'Points'];
-					labels.forEach(l => {
-						var th = document.createElement('th');
-						th.innerText = l;
-						header.appendChild(th);
-					});
-				var codes = Object.keys(flags);
-					codes.forEach(c => {
-						var th = document.createElement('th');
-						th.innerText = flags[c].code;
-						header.appendChild(th);
-					});
-				board.appendChild(header);
-
-				for(var t = 0; t < teamList.length; t++){
-
-					var team = teamList[t];
-
-					var row = document.createElement('tr');
-					var content = ['Rank', 'Team', 'Points'];
-
-					var rank = document.createElement('p');
-						rank.innerText = (t+1);
-						content[0] = rank;
-
-					var teamName = document.createElement('p');
-						teamName.innerText = team.details.name;
-						content[1] = teamName;
-
-					var totalScore = document.createElement('p');
-						totalScore.innerText = team.total;
-						content[2] = totalScore;
-
-					var codeScores = codes.map(fid => team.scores[fid]).map(score => {
-						var node = document.createElement('p');
-						node.innerText = score || 0;
-						return node;
-					});
-					content.push.apply(content, codeScores);
-
-					content.forEach(c => {
-						var cell = document.createElement('td');
-						cell.appendChild(c);
-						row.appendChild(cell);
-					});
-					board.appendChild(row);
-				}
-
-				return board;
+			function flashElement(el, color){
+				el.style.background = color || 'black';
+				el.style.color = 'white';
+				setTimeout(() => {
+					el.style.background = 'transparent';
+					el.style.color = 'black';
+				}, 750);
 			}
+
+			/*
+			 * Pass the fake teams into the main method (or not) to display scores
+			 * main() returns a promise with a `simulator` function as its argument
+			 * the `simulator` function takes four arguments:
+			 * - team id, flag id, submission object, time delay
+			 * Use this to help visualize updates and lead changes
+			 * Callback can also be used to apply JavaScript to rendered DOM element
+			 * - returned as `board`
+			 */
+
+			main(renderDiffs, FAKE_TEAMS).then(response => {
+
+				var simulateSubmission = response.simulator;
+				var scoreBoard = response.board;
+
+				simulateSubmission('fake1', '12c', {correct: true}, 1000).then(() => {
+					simulateSubmission('fake1', '12d', {correct: false}, 1000).then(() => {
+						simulateSubmission('fake1', '12d', {correct: true}, 1000).then(() => {
+							simulateSubmission('fake1', '12e', {correct: true}, 1000).then(() => {
+								simulateSubmission('fake1', '12f', {correct: true}, 1000);
+							});
+						});
+					});
+				});
+
+			});
 
 		</script>
 
