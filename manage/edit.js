@@ -151,7 +151,7 @@ function renderFlagBoard(flags){
 var addFlag = document.getElementById('add-flag');
 on(addFlag, 'click', (e) => {
 	db.ref('ctf/' + CONTEST_ID + '/flags').push({
-		code: 'X0',
+		code: '99',
 		name: 'New Challenge',
 		description: 'None.',
 		link: false,
