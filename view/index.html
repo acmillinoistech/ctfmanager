@@ -116,11 +116,11 @@
 				var simulateSubmission = response.simulator;
 				var scoreBoard = response.board;
 
-				simulateSubmission('fake1', '12c', {correct: true}, 1000).then(() => {
-					simulateSubmission('fake1', '12d', {correct: false}, 1000).then(() => {
-						simulateSubmission('fake1', '12d', {correct: true}, 1000).then(() => {
-							simulateSubmission('fake1', '12e', {correct: true}, 1000).then(() => {
-								simulateSubmission('fake1', '12f', {correct: true}, 1000);
+				simulateSubmission('fake1', '13c', {correct: true}, 3000).then(() => {
+					simulateSubmission('fake1', '13d', {correct: false}, 3000).then(() => {
+						simulateSubmission('fake1', '13d', {correct: true}, 3000).then(() => {
+							simulateSubmission('fake1', '13e', {correct: true}, 3000).then(() => {
+								simulateSubmission('fake1', '13f', {correct: true}, 3000);
 							});
 						});
 					});

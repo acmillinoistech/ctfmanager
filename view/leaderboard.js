@@ -185,10 +185,10 @@ function getTeamList(teams, flags, teamData){
 
 	}).sort((a, b) => {
 		if(a.total === b.total){
-			return b.total - a.total;
+			return countNonZeroScores(b.scores) - countNonZeroScores(a.scores);
 		}
 		else{
-			return countNonZeroScores(b.scores) - countNonZeroScores(a.scores);
+			return b.total - a.total;
 		}
 	});
 }
