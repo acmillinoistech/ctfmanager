@@ -8,7 +8,7 @@ function main(renderDiffs, fakeTeams){
 
 		db.ref('ctf/' + CONTEST_ID + '/details').once('value', (snapshot) => {
 			var contestName = document.getElementById('contest-name');
-			contestName.innerText = snapshot.val().name;
+			contestName.innerText = "Leaderboard: " + snapshot.val().name;
 		});
 
 		db.ref('ctf/' + CONTEST_ID + '/teams').once('value', (teamSnap) => {
@@ -68,8 +68,11 @@ function render(submissions, teamData, flags, renderDiffs, fakeTeams){
 
 	var teamList = getTeamList(submissions, flags, teamData);
 	var board = renderScoreBoard(teamList, flags);
+	//board.className("striped")
 	var scoreBoard = document.getElementById('score-board')
 	scoreBoard.replaceChild(board, scoreBoard.children[0]);
+	var table = document.getElementById('score-board').children[0]
+	table.className = "bordered responsive-table"
 
 	if(renderDiffs){
 		if(oldTeamList){
@@ -193,7 +196,7 @@ function getTeamList(teams, flags, teamData){
 function renderScoreBoard(teamList, flags){
 	var board = document.createElement('table');
 
-	var header = document.createElement('tr');
+	var header = document.createElement('thead'); //tr
 	var labels = ['Rank', 'Team', 'Points'];
 		labels.forEach(l => {
 			var th = document.createElement('th');
@@ -207,6 +210,8 @@ function renderScoreBoard(teamList, flags){
 			header.appendChild(th);
 		});
 	board.appendChild(header);
+
+	var body = document.createElement('tbody');
 
 	for(var t = 0; t < teamList.length; t++){
 
@@ -246,8 +251,10 @@ function renderScoreBoard(teamList, flags){
 			cell.appendChild(c);
 			row.appendChild(cell);
 		});
-		board.appendChild(row);
+		body.appendChild(row);
 	}
+
+	board.appendChild(body);
 
 	return board;
 }
