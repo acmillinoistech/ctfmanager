@@ -100,8 +100,17 @@ function renderSubmissionPane(list, flag){
 		p.innerText = flag.description;
 		pane.appendChild(h);
 		pane.appendChild(p);
+	if(flag.link){
+		var a = document.createElement('a');
+			a.href = flag.link;
+			a.target = '_blank';
+			a.innerText = 'View Flag on GitHub';
+			pane.appendChild(a);
+	}
 	if(flag.answer === 'TYPE::JUDGED'){
 		var form = document.createElement('div');
+		var ha = document.createElement('h3');
+			ha.innerText = 'Submission Form';
 		var password = document.createElement('input');
 			password.type = 'password';
 		var textarea = document.createElement('textarea');
@@ -114,11 +123,15 @@ function renderSubmissionPane(list, flag){
 			var fi = textarea.dataset.flag;
 			postSubmission(ps, fi, tx);
 		});
+		form.appendChild(ha);
 		form.appendChild(password);
 		form.appendChild(textarea);
 		form.appendChild(button);
 		pane.appendChild(form);
 	}
+	var hb = document.createElement('h3');
+		hb.innerText = 'Past Submissions';
+		pane.appendChild(hb);
 	if(list.length > 0){
 		for(var i = 0; i < list.length; i++){
 			var res = list[i];
