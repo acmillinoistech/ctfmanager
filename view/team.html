@@ -19,6 +19,10 @@
 		</script>
 		<style type="text/css">
 
+			html {
+				font-size: 15px;
+			}
+
 			div#flag-pane, div#container {
 				display: inline-block;
 				vertical-align: top;
@@ -30,6 +34,42 @@
 
 			div#container {
 				width: 70vw;
+			}
+
+			div.submission-form input, div.submission-form textarea {
+				display: block;
+				margin: 5px 0;
+				padding: 5px;
+				width: 300px;
+				line-height: 18px;
+				font-size: 15px;
+				box-sizing: border-box;
+			}
+
+			span.correct, span.incorrect {
+				color: white;
+				padding: 5px;
+				border-radius: 5px;
+				margin-right: 5px;
+			}
+
+			span.correct {
+				background: green
+			}
+
+			span.incorrect {
+				background: red;
+			}
+
+			pre {
+				padding: 5px;
+				width: 300px;
+				background: rgba(0, 0, 0, 0.1);
+				white-space: pre-wrap;       /* Since CSS 2.1 */
+				white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+				white-space: -pre-wrap;      /* Opera 4-6 */
+				white-space: -o-pre-wrap;    /* Opera 7 */
+				word-wrap: break-word;       /* Internet Explorer 5.5+ */
 			}
 
 		</style>
@@ -48,6 +88,8 @@
 
 			getFlags().then(list => {
 				renderFlagPane(list);
+				var x = document.querySelector('[data-flag=jx]');
+				x.click();
 			});
 
 		</script>

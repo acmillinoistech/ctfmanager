@@ -109,10 +109,12 @@ function renderSubmissionPane(list, flag){
 	}
 	if(flag.answer === 'TYPE::JUDGED'){
 		var form = document.createElement('div');
+			form.classList.add('submission-form');
 		var ha = document.createElement('h3');
 			ha.innerText = 'Submission Form';
 		var password = document.createElement('input');
 			password.type = 'password';
+			password.placeholder = 'Team Password';
 		var textarea = document.createElement('textarea');
 			textarea.dataset.flag = flag.code;
 		var button = document.createElement('button');
@@ -137,8 +139,19 @@ function renderSubmissionPane(list, flag){
 			var res = list[i];
 			var div = document.createElement('div');
 			var time = moment(res.timestamp).format('hh:mm A');
-			var resString = time + ': ' + res.answer;
-				div.innerText = resString;
+			var pre = document.createElement('pre');
+				pre.innerText = res.answer;
+			var pd = document.createElement('p');
+				var s1 = document.createElement('span');
+					s1.innerText = res.correct ? 'Correct' : 'Incorrect';
+					var sClass = res.correct ? 'correct' : 'incorrect';
+					s1.classList.add(sClass);
+				var s2 = document.createElement('span');
+					s2.innerText = time;
+				pd.appendChild(s1);
+				pd.appendChild(s2);
+				div.appendChild(pd);
+				div.appendChild(pre);
 				pane.appendChild(div);
 		}
 	}
