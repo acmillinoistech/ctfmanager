@@ -25,21 +25,20 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.1/js/materialize.min.js"></script>
 		
 		<style type="text/css">
-
-
-
+			body {
+				background-image: url("http://img13.deviantart.net/0329/i/2015/340/c/b/dark_material_design_wallpaper__1_in_4k_by_tgs266-d9j7yts.png");
+			}
 		</style>
 	</head>
 	<body>
-		
 
 		  <nav>
-			<div class="nav-wrapper">
+			<div class="nav-wrapper grey darken-3">
 			<a id="contest-name" class="brand-logo center" style="font-weight: 900; font-style: italic">Leaderboard:</a>
 			</div>
 		</nav>
 		
-		<div id="score-board" style="padding: 20px">
+		<div id="score-board" style="margin-left: 2%; margin-right: 2%; margin-top: 1%">
 			<div>Loading...</div>
 		</div>
 
@@ -58,6 +57,21 @@
 					submissions: {
 						'12a': [{correct: true}],
 						'12b': [{correct: true}]
+					} 
+				},
+					'fake2': {
+					name: 'Fake Team 2',
+					submissions: {
+						'11a': [{correct: true}],
+						'12b': [{correct: true}]
+					}
+				},
+				'fake3': {
+					name: 'Fake Team 3',
+					submissions: {
+						'11a': [{correct: true}],
+						'12b': [{correct: true}],
+						'12a': [{correct: true}]
 					}
 				}
 			}
@@ -73,17 +87,17 @@
 				diffs.forEach(diff => {
 					switch(diff.type){
 						case 'attempt':
-							var row = document.querySelector('[data-team="' + diff.team + '"]');
-							var cell = row.querySelector('[data-flag="' + diff.flag + '"]');
-							var delta = diff.after - diff.before;
-							var color = (delta > 0) ? 'green' : 'red';
-							flashElement(cell, color)
+							//var row = document.querySelector('[data-team="' + diff.team + '"]');
+							//var cell = row.querySelector('[data-flag="' + diff.flag + '"]');
+							//var delta = diff.after - diff.before;
+							//var color = (delta > 0) ? 'green' : 'red';
+							// flashElement(cell, color)
 							break;
 						case 'rank':
-							var row = document.querySelector('[data-team="' + diff.team + '"]');
+							var row = document.getElementById(diff.team);
 							var delta = diff.after - diff.before;
 							if(delta < 0){
-								flashElement(row, 'green')
+								flashElement(row)
 							}
 							break;
 						default:
@@ -92,12 +106,12 @@
 				});
 			}
 
-			function flashElement(el, color){
-				el.style.background = color || 'black';
-				el.style.color = 'white';
+			function flashElement(el){
+				el.classList.add("blue");
+				el.classList.add("lighten-2");
 				setTimeout(() => {
-					el.style.background = 'transparent';
-					el.style.color = 'black';
+					el.classList.remove("blue");
+					el.classList.remove("lighten-2");
 				}, 750);
 			}
 
@@ -118,8 +132,8 @@
 
 				simulateSubmission('fake1', '13c', {correct: true}, 3000).then(() => {
 					simulateSubmission('fake1', '13d', {correct: false}, 3000).then(() => {
-						simulateSubmission('fake1', '13d', {correct: true}, 3000).then(() => {
-							simulateSubmission('fake1', '13e', {correct: true}, 3000).then(() => {
+						simulateSubmission('fake1', '7a', {correct: true}, 3000).then(() => {
+							simulateSubmission('fake1', '13a', {correct: true}, 3000).then(() => {
 								simulateSubmission('fake1', '13f', {correct: true}, 3000);
 							});
 						});
