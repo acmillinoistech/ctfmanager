@@ -54,7 +54,7 @@ function renderFlagPane(list){
 	for(var i = 0; i < list.length; i++){
 		var flag = list[i];
 		var div = document.createElement('div');
-		div.innerText = flag.name;
+		div.innerText = 'Flag ' + flag.code;
 		div.dataset.flag = flag.code;
 		div.addEventListener('click', e => {
 			var flag = e.target.dataset.flag;
@@ -95,7 +95,7 @@ function renderSubmissionPane(list, flag){
 	var pane = document.getElementById('submission-pane');
 		pane.innerHTML = '';
 	var h = document.createElement('h2');
-		h.innerText = flag.name;
+		h.innerText = '[' + flag.code + '] ' + flag.name;
 	var p = document.createElement('p');
 		p.innerText = flag.description;
 		pane.appendChild(h);
