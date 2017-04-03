@@ -19,15 +19,36 @@
 		</script>
 		<style type="text/css">
 
+			div#flag-pane, div#container {
+				display: inline-block;
+				vertical-align: top;
+			}
 
+			div#flag-pane {
+				width: 20vw;
+			}
+
+			div#container {
+				width: 75vw;
+			}
 
 		</style>
 	</head>
 	<body>
 
+		<div id="flag-pane"></div>
+		<div id="container">
+			<div id="submission-pane"></div>
+		</div>
+
+		<script src="../lib/moment.min.js"></script>
 		<script type="text/javascript" src="team.js"></script>
 		
 		<script type="text/javascript">
+
+			getFlags().then(list => {
+				renderFlagPane(list);
+			});
 
 		</script>
 
