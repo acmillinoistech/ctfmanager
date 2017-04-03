@@ -8,7 +8,7 @@ function main(renderDiffs, fakeTeams){
 
 		db.ref('ctf/' + CONTEST_ID + '/details').once('value', (snapshot) => {
 			var contestName = document.getElementById('contest-name');
-			contestName.innerText = snapshot.val().name;
+			contestName.innerText = "Leaderboard: " + snapshot.val().name;
 		});
 
 		db.ref('ctf/' + CONTEST_ID + '/teams').once('value', (teamSnap) => {
@@ -68,8 +68,11 @@ function render(submissions, teamData, flags, renderDiffs, fakeTeams){
 
 	var teamList = getTeamList(submissions, flags, teamData);
 	var board = renderScoreBoard(teamList, flags);
+	//board.className("striped")
 	var scoreBoard = document.getElementById('score-board')
 	scoreBoard.replaceChild(board, scoreBoard.children[0]);
+	//var table = document.getElementById('score-board').children[0]
+	//table.className = "bordered responsive-table"
 
 	if(renderDiffs){
 		if(oldTeamList){
@@ -182,72 +185,136 @@ function getTeamList(teams, flags, teamData){
 
 	}).sort((a, b) => {
 		if(a.total === b.total){
-			return b.total - a.total;
+			return countNonZeroScores(b.scores) - countNonZeroScores(a.scores);
 		}
 		else{
-			return countNonZeroScores(b.scores) - countNonZeroScores(a.scores);
+			return b.total - a.total;
 		}
 	});
 }
 
-function renderScoreBoard(teamList, flags){
-	var board = document.createElement('table');
+// function renderScoreBoard(teamList, flags){
+// 	var board = document.createElement('table');
 
-	var header = document.createElement('tr');
-	var labels = ['Rank', 'Team', 'Points'];
-		labels.forEach(l => {
-			var th = document.createElement('th');
-			th.innerText = l;
-			header.appendChild(th);
-		});
-	var codes = Object.keys(flags);
-		codes.forEach(c => {
-			var th = document.createElement('th');
-			th.innerText = flags[c].code;
-			header.appendChild(th);
-		});
-	board.appendChild(header);
+// 	var header = document.createElement('thead'); //tr
+// 	var labels = ['Rank', 'Team', 'Points'];
+// 		labels.forEach(l => {
+// 			var th = document.createElement('th');
+// 			th.innerText = l;
+// 			header.appendChild(th);
+// 		});
+// 	var codes = Object.keys(flags);
+// 		codes.forEach(c => {
+// 			var th = document.createElement('th');
+// 			th.innerText = flags[c].code;
+// 			header.appendChild(th);
+// 		});
+// 	board.appendChild(header);
 
-	for(var t = 0; t < teamList.length; t++){
+// 	var body = document.createElement('tbody');
 
-		var team = teamList[t];
+// 	for(var t = 0; t < teamList.length; t++){
 
-		var row = document.createElement('tr');
-			row.dataset.team = team.details.id;
-		var content = ['Rank', 'Team', 'Points'];
+// 		var team = teamList[t];
+
+// 		var row = document.createElement('tr');
+// 			row.dataset.team = team.details.id;
+// 		var content = ['Rank', 'Team', 'Points'];
+
+// 		var rank = document.createElement('p');
+// 			rank.innerText = (t+1);
+// 			content[0] = rank;
+
+// 		var teamName = document.createElement('p');
+// 			teamName.innerText = team.details.name;
+// 			content[1] = teamName;
+
+// 		var totalScore = document.createElement('p');
+// 			totalScore.innerText = team.total;
+// 			content[2] = totalScore;
+
+// 		var codeScores = codes.map(fid => {
+// 			return {
+// 				flag: fid,
+// 				score: team.scores[fid]
+// 			}
+// 		}).map(code => {
+// 			var node = document.createElement('p');
+// 				node.dataset.flag = code.flag;
+// 				node.innerText = code.score || 0;
+// 			return node;
+// 		});
+// 		content.push.apply(content, codeScores);
+
+// 		content.forEach(c => {
+// 			var cell = document.createElement('td');
+// 			cell.appendChild(c);
+// 			row.appendChild(cell);
+// 		});
+// 		body.appendChild(row);
+// 	}
+
+// 	board.appendChild(body);
+
+// 	return board;
+// }
+
+function renderScoreBoard(teamList, flag) {
+	
+	var board = document.createElement('div');
+	
+	for (var i = 0; i < teamList.length; i++) {
+		var cardHorizontal = document.createElement('div')
+			cardHorizontal.className = "card horizontal row valign-wrapper";
+			cardHorizontal.id = teamList[i].details.id
+			cardHorizontal.style.margin = "0.5%"
+		var cardStacked = document.createElement('div')
+			cardStacked.className = "card-stacked";
+		var cardContent = document.createElement('div')
+			cardContent.className = "card-content";
+		
+		// var img = document.createElement('img');
+		// 	img.src = "https://upload.wikimedia.org/wikipedia/commons/4/49/Koala_climbing_tree.jpg"
+		// 	img.className = "circle responsive-img"
+		// 	img.width = "90"
+		// 	img.height = "90"
 
 		var rank = document.createElement('p');
-			rank.innerText = (t+1);
-			content[0] = rank;
+			rank.innerText = i + 1
+			rank.style.fontWeight = "800"
+			rank.style.fontSize = "25px"
 
+		var rankWrap = document.createElement('div');
+			rankWrap.className = "col s1 center-align"
+		
 		var teamName = document.createElement('p');
-			teamName.innerText = team.details.name;
-			content[1] = teamName;
+			teamName.style.fontWeight = "600"
+			teamName.innerText = teamList[i].details.name;
+		
+		var scoreBarP = document.createElement('span');
+			scoreBarP.className = "progress"
+			scoreBarP.style.height = "10px"
+		var scoreBar = document.createElement('span');
+			scoreBar.className = "determinate deep-orange"
+			scoreBar.style.width = ((teamList[i].total / teamList[0].total) * 100) + '%'
 
-		var totalScore = document.createElement('p');
-			totalScore.innerText = team.total;
-			content[2] = totalScore;
+		var score = document.createElement('span');
+			score.innerHTML = 'Score: ' + teamList[i].total;
 
-		var codeScores = codes.map(fid => {
-			return {
-				flag: fid,
-				score: team.scores[fid]
-			}
-		}).map(code => {
-			var node = document.createElement('p');
-				node.dataset.flag = code.flag;
-				node.innerText = code.score || 0;
-			return node;
-		});
-		content.push.apply(content, codeScores);
+		scoreBarP.appendChild(scoreBar)
+		rankWrap.appendChild(rank)
 
-		content.forEach(c => {
-			var cell = document.createElement('td');
-			cell.appendChild(c);
-			row.appendChild(cell);
-		});
-		board.appendChild(row);
+		cardContent.appendChild(teamName)
+		cardContent.appendChild(score)
+		cardContent.appendChild(scoreBarP)
+		
+		cardStacked.appendChild(cardContent)
+		
+		cardHorizontal.appendChild(rankWrap)
+		cardHorizontal.appendChild(cardStacked)
+		
+		board.appendChild(cardHorizontal)
 	}
 
-	return board;
+	return board
 }
