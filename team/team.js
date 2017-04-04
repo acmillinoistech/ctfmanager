@@ -212,6 +212,15 @@ function renderSubmissionPane(list, flag){
 	return pane;
 }
 
+function getTeamSubs(team, flag){
+	return new Promise((resolve, reject) => {
+		var ref = db.ref('ctf/' + CONTEST_ID + '/submissions/' + team + '/' + flag);
+		ref.once('value', snap => {
+			resolve(snap.val());
+		}).catch(reject);
+	});
+}
+
 function showAllPane(){
 	var pane = document.getElementById('submission-pane');
 		pane.innerHTML = '';
@@ -222,48 +231,84 @@ function showAllPane(){
 
 	getFlags().then(list => {
 
-		var table = document.createElement('table');
-
-		var thead = document.createElement('thead');
-		var th1 = document.createElement('th');
-			th1.innerText = 'Code';
-			thead.appendChild(th1);
-		var th2 = document.createElement('th');
-			th2.innerText = 'Points';
-			thead.appendChild(th2);
-		var th3 = document.createElement('th');
-			th3.innerText = 'Flag';
-			thead.appendChild(th3);
-			table.appendChild(thead);
-
-		list.forEach(flag => {
-			var tr = document.createElement('tr');
-			var content = [
-				flag.code,
-				flag.points,
-				flag.name
-			];
-			content.forEach((cell, i) => {
-				var td = document.createElement('td');
-				if(i === 2){
-					var af = document.createElement('a');
-					af.target = '_blank';
-					af.href = flag.link;
-					af.innerText = flag.name;
-					td.appendChild(af);
-					tr.appendChild(td);
-				}
-				else{
-					td.innerText = cell;
-					tr.appendChild(td);
-				}
-			});
-			table.appendChild(tr);
+		var promises = list.map(f => {
+			var p = getTeamSubs(TEAM_ID, f.code);
+				p.code = f.code;
+			return p;
 		});
 
-		pane.appendChild(h);
-		//pane.appendChild(p);
-		pane.appendChild(table);
+		Promise.all(promises).then(subs => {
+
+			var subsMap = {};
+			subs.forEach((s, sdx) => {
+				var prom = promises[sdx];
+				var scored = false;
+				for(var at in s){
+					if(s[at]){
+						if(s[at].correct){
+							scored = true;			
+						}
+					}
+				}
+				subsMap[prom.code] = scored;
+			});
+
+			var table = document.createElement('table');
+
+			var thead = document.createElement('thead');
+			var th1 = document.createElement('th');
+				th1.innerText = 'Code';
+				th1.classList.add('center-align');
+				thead.appendChild(th1);
+			var th2 = document.createElement('th');
+				th2.innerText = 'Points';
+				th2.classList.add('center-align');
+				thead.appendChild(th2);
+			var th3 = document.createElement('th');
+				th3.innerText = 'Flag';
+				thead.appendChild(th3);
+				table.appendChild(thead);
+
+			list.forEach(flag => {
+				var score = subsMap[flag.code] ? flag.points : 0;
+				var color = subsMap[flag.code] ? '#26A69A' : '#FF5238';
+				var tr = document.createElement('tr');
+				var content = [
+					flag.code,
+					score + '/' + flag.points,
+					flag.name
+				];
+				content.forEach((cell, i) => {
+					var td = document.createElement('td');
+					if(i === 2){
+						var af = document.createElement('a');
+						af.target = '_blank';
+						af.href = flag.link;
+						af.innerText = flag.name;
+						td.appendChild(af);
+						tr.appendChild(td);
+					}
+					else if(i === 1){
+						td.style.background = color;
+						td.style.color = 'white';
+						td.innerText = cell;
+						td.classList.add('center-align');
+						tr.appendChild(td);
+					}
+					else{
+						td.innerText = cell;
+						td.classList.add('center-align');
+						tr.appendChild(td);
+					}
+				});
+				table.appendChild(tr);
+			});
+
+			pane.appendChild(h);
+			//pane.appendChild(p);
+			pane.appendChild(table);
+
+		});
 
 	});
 
