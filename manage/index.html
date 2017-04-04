@@ -19,32 +19,55 @@
 		<link rel="stylesheet" type="text/css" href="main.css">
 		<style type="text/css">
 
-
+			#manage-board {
+				display: none;
+			}
 
 		</style>
 	</head>
 	<body>
-		
-		<h1 id="contest-name">Loading...</h1>
-		<h2>Edit Challenges</h2>
-		<div id="flag-board">
-			<div>Loading...</div>
-			<br>
-			<button id="add-flag">Add New Flag</button>
-		</div>
 
-		<h2>Edit Teams</h2>
-		<div id="team-board">
-			<div>Loading...</div>
-			<br>
-			<button id="add-team">Add New Team</button>
+		<div id="login-board">
+			<h1>Login</h1>
+			<p id="login-message">Please login to access the contest manager.</p>
+			<button id="login-button">Login</button>
+		</div>
+		
+		<div id="manage-board">
+			<h1 id="contest-name">Loading...</h1>
+			<h2>Edit Challenges</h2>
+			<div id="flag-board">
+				<div>Loading...</div>
+				<br>
+				<button id="add-flag">Add New Flag</button>
+			</div>
+
+			<h2>Edit Teams</h2>
+			<div id="team-board">
+				<div>Loading...</div>
+				<br>
+				<button id="add-team">Add New Team</button>
+			</div>
 		</div>
 		
 		<script type="text/javascript" src="edit.js"></script>
 
 		<script type="text/javascript">
 
-
+			var button = document.getElementById('login-button');
+			button.addEventListener('click', e => {
+				login().then(user => {
+					console.log(user);
+					var manager = document.getElementById('manage-board');
+					manager.style.display = 'block';
+					var loginBoard = document.getElementById('login-board');
+					loginBoard.style.display = 'none';
+					main();
+				}).catch(err => {
+					var loginMsg = document.getElementById('login-message');
+					loginMsg.innerText = err;
+				});
+			});
 
 		</script>
 

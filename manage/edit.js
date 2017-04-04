@@ -1,5 +1,39 @@
 var CONTEST_ID = 'clarity2017'; // prompt('Enter Contest ID.');
 
+function login(){
+	return new Promise((resolve, reject) => {
+		var provider = new firebase.auth.GoogleAuthProvider();
+		firebase.auth().signInWithPopup(provider).then((data) => {
+			var result = data.user;
+			var authDB = firebase.database();
+			var admin = authDB.ref('ctf/' + CONTEST_ID + '/admin/' + result.uid);
+			admin.once('value', snap => {
+				if(snap.val()){
+					resolve({
+						userid: result.uid,
+						name: result.displayName,
+						email: result.email,
+						image: result.photoURL
+					});
+				}
+				else{
+					var reqAccess = authDB.ref('ctf/' + CONTEST_ID + '/requests/' + result.uid);
+					reqAccess.set({
+						uid: result.uid,
+						name: result.displayName,
+						email: result.email
+					}).then(() => {
+						reject('You are not allowed access. If you believe this is a mistake, please contact the manager of this contest.');
+					}).catch(reject);
+				}
+			}).catch(reject);
+		}).catch(reject);
+	});
+}
+
+
+function main(){
+
 var db = firebase.database();
 
 db.ref('ctf/' + CONTEST_ID + '/flags').on('value', (snapshot) => {
@@ -246,3 +280,5 @@ on(addTeam, 'click', (e) => {
 		name: 'New Team'
 	});
 });
+
+}
