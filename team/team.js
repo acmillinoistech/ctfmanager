@@ -9,7 +9,7 @@ var currentListener = false;
 
 getFlags().then(list => {
 	renderFlagPane(list);
-	var code = list[0].code;
+	var code = 'all-flags' || list[1].code;
 	var x = document.querySelector('[data-flag="' + code + '"]');
 	x.click();
 });
@@ -60,24 +60,45 @@ function getFlags(){
 	});
 }
 
-function renderFlagPane(list){
+function renderFlagPane(flagList){
 	var pane = document.getElementById('flag-pane');
 		pane.innerHTML = '';
+	var list = [{
+		code: 'all-flags'
+	}];
+	list.push.apply(list, flagList);
 	for(var i = 0; i < list.length; i++){
 		var flag = list[i];
 		var div = document.createElement('div');
-		div.innerText = 'Flag ' + flag.code;
+		if(flag.code === 'all-flags'){
+			div.innerText = 'All Flags';
+		}
+		else{
+			div.innerText = 'Flag ' + flag.code;
+		}
 		div.dataset.flag = flag.code;
 		div.classList.add('flag-nav');
-		div.addEventListener('click', e => {
-			var flag = e.target.dataset.flag;
-			showSubmissionPane(TEAM_ID, flag);
-			var divs = document.getElementsByClassName('flag-nav');
-			for(var j = 0; j < divs.length; j++){
-				divs[j].classList.remove('active');
-			}
-			e.target.classList.add('active');
-		});
+		if(flag.code === 'all-flags'){
+			div.addEventListener('click', e => {
+				showAllPane();
+				var divs = document.getElementsByClassName('flag-nav');
+				for(var j = 0; j < divs.length; j++){
+					divs[j].classList.remove('active');
+				}
+				e.target.classList.add('active');
+			});
+		}
+		else{
+			div.addEventListener('click', e => {
+				var flag = e.target.dataset.flag;
+				showSubmissionPane(TEAM_ID, flag);
+				var divs = document.getElementsByClassName('flag-nav');
+				for(var j = 0; j < divs.length; j++){
+					divs[j].classList.remove('active');
+				}
+				e.target.classList.add('active');
+			});
+		}
 		pane.appendChild(div);
 	}
 	return pane;
@@ -188,6 +209,18 @@ function renderSubmissionPane(list, flag){
 			div.innerText = 'No submissions yet.'
 			pane.appendChild(div);
 	}
+	return pane;
+}
+
+function showAllPane(){
+	var pane = document.getElementById('submission-pane');
+		pane.innerHTML = '';
+	var h = document.createElement('h3');
+		h.innerText = 'View All Flags';
+	var p = document.createElement('p');
+		p.innerText = 'Not currently available. view flags individually using the left pane.';
+		pane.appendChild(h);
+		pane.appendChild(p);
 	return pane;
 }
 

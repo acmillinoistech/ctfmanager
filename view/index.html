@@ -76,6 +76,8 @@
 				}
 			}
 
+			FAKE_TEAMS = {};
+
 			/*
 			 * Pass this function into the main method (or not) to handle changes
 			 * Argument is a list of scoreboard changes
@@ -130,7 +132,7 @@
 				var simulateSubmission = response.simulator;
 				var scoreBoard = response.board;
 
-				simulateSubmission('fake1', '13c', {correct: true}, 3000).then(() => {
+				/*simulateSubmission('fake1', '13c', {correct: true}, 3000).then(() => {
 					simulateSubmission('fake1', '13d', {correct: false}, 3000).then(() => {
 						simulateSubmission('fake1', '7a', {correct: true}, 3000).then(() => {
 							simulateSubmission('fake1', '13a', {correct: true}, 3000).then(() => {
@@ -138,7 +140,7 @@
 							});
 						});
 					});
-				});
+				});*/
 
 			});
 
