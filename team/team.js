@@ -165,7 +165,8 @@ function renderSubmissionPane(list, flag){
 		for(var i = 0; i < list.length; i++){
 			var res = list[i];
 			var div = document.createElement('div');
-			var time = moment(res.timestamp).format('hh:mm A');
+			var dateObj = new Date(res.timestamp);
+			var time = moment(dateObj).format('hh:mm:ss A');
 			var pre = document.createElement('pre');
 				pre.innerText = res.answer;
 			var pd = document.createElement('p');
