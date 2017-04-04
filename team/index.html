@@ -17,40 +17,70 @@
 			firebase.initializeApp(config);
 
 		</script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.1/css/materialize.min.css">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.1/js/materialize.min.js"></script>
 		<style type="text/css">
 
 			html {
 				font-size: 15px;
+				overflow: hidden;
 			}
 
-			div#flag-pane, div#container {
+			div#flag-pane, div#main-pane {
 				display: inline-block;
 				vertical-align: top;
+				height: 100vh;
+				overflow-y: scroll;
 			}
 
 			div#flag-pane {
-				
+				width: 100px;
+				position: fixed;
+				left: 0;
+				top: 0;
 			}
 
-			div#container {
-				width: 70vw;
+			div.flag-nav {
+				line-height: 25px;
+				padding: 5px;
+				border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+			}
+
+			div.flag-nav:hover {
+				background: #26A69A;
+				color: white;
+			}
+
+			div.active {
+				background: #26A69A;
+				color: white;
+			}
+
+			div#main-pane {
+				width: 90vw;
+				padding: 0 20px;
+				margin-left: 100px;
+			}
+
+			h1, h2, h3, h4, h5, h6 {
+				font-weight: bold;
 			}
 
 			div.submission-form input, div.submission-form textarea {
-				display: block;
+				/*display: block;
 				margin: 5px 0;
 				padding: 5px;
 				width: 300px;
 				line-height: 18px;
 				font-size: 15px;
-				box-sizing: border-box;
+				box-sizing: border-box;*/
 			}
 
 			span.correct, span.incorrect {
 				color: white;
 				padding: 5px;
 				border-radius: 5px;
-				margin-right: 5px;
+				margin-right: 10px;
 			}
 
 			span.correct {
@@ -63,7 +93,6 @@
 
 			pre {
 				padding: 5px;
-				width: 300px;
 				background: rgba(0, 0, 0, 0.1);
 				white-space: pre-wrap;       /* Since CSS 2.1 */
 				white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
@@ -77,7 +106,13 @@
 	<body>
 
 		<div id="flag-pane"></div>
-		<div id="container">
+
+		<div id="main-pane">
+			<div id="login-pane">
+				<h3>Team Page</h3>
+				<input id="login-password" type="password" placeholder="Team Secret Key">
+				<button id="login-button" class="btn wave-effect wave-light">Login</button>
+			</div>
 			<div id="submission-pane"></div>
 		</div>
 
@@ -86,10 +121,19 @@
 		
 		<script type="text/javascript">
 
-			getFlags().then(list => {
-				renderFlagPane(list);
-				var x = document.querySelector('[data-flag=jx]');
-				x.click();
+			var lpn = document.getElementById('login-pane');
+			var pwd = document.getElementById('login-password');
+			var lgb = document.getElementById('login-button');
+
+			lgb.addEventListener('click', e => {
+				var teamKey = pwd.value.trim();
+				if(teamKey){
+					main(teamKey);
+					lpn.style.display = 'none';
+				}
+				else{
+					alert('Enter a key.');
+				}
 			});
 
 		</script>

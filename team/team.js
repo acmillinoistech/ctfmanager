@@ -1,11 +1,18 @@
+function main(teamKey){
+
 var CONTEST_ID = 'clarity2017'; // prompt('Enter Contest ID.');
-var TEAM_ID = false;
+var TEAM_ID = teamKey;
 var db = firebase.database();
 var CTF_URL = 'http://acm-sinatra-vingkan.c9users.io/submission/';
 var currentRef = false;
 var currentListener = false;
 
-TEAM_ID = '-KgIunYPz9HUOTUcKjU7';
+getFlags().then(list => {
+	renderFlagPane(list);
+	var code = list[0].code;
+	var x = document.querySelector('[data-flag="' + code + '"]');
+	x.click();
+});
 
 function getSubmissionListener(teamid, flagid){
 	var ref = db.ref('ctf/' + CONTEST_ID + '/submissions/' + teamid + '/' + flagid);
@@ -23,14 +30,19 @@ function getFlagData(flagid){
 }
 
 function postSubmission(teamid, flagid, text){
-	return new Promise((resolve, reject) => {
-		$.post(CTF_URL + flagid, {
-			team: teamid,
-			answer: text
-		}).then((res) => {
-			resolve(res);
+	if(teamid && flagid && text){
+		return new Promise((resolve, reject) => {
+			$.post(CTF_URL + flagid, {
+				team: teamid,
+				answer: text
+			}).then((res) => {
+				resolve(res);
+			});
 		});
-	});
+	}
+	else{
+		alert('No content.');
+	}
 }
 
 function getFlags(){
@@ -41,7 +53,7 @@ function getFlags(){
 			var list = Object.keys(flagSnap).map(key => {
 				return flagSnap[key];
 			}).sort((a, b) => {
-				return a.code.localeCompare(b);
+				return a.code.localeCompare(b.code);
 			});
 			resolve(list);
 		});
@@ -56,9 +68,15 @@ function renderFlagPane(list){
 		var div = document.createElement('div');
 		div.innerText = 'Flag ' + flag.code;
 		div.dataset.flag = flag.code;
+		div.classList.add('flag-nav');
 		div.addEventListener('click', e => {
 			var flag = e.target.dataset.flag;
 			showSubmissionPane(TEAM_ID, flag);
+			var divs = document.getElementsByClassName('flag-nav');
+			for(var j = 0; j < divs.length; j++){
+				divs[j].classList.remove('active');
+			}
+			e.target.classList.add('active');
 		});
 		pane.appendChild(div);
 	}
@@ -77,9 +95,10 @@ function showSubmissionPane(teamid, flagid){
 				var list = Object.keys(submissions).map(key => {
 					return submissions[key];
 				}).sort((a, b) => {
-					return b.timestamp - a.timestamp;
+					var ad = new Date(a.timestamp).getTime();
+					var bd = new Date(b.timestamp).getTime();
+					return bd - ad;
 				});
-				
 				renderSubmissionPane(list, data);
 			}
 			else{
@@ -94,12 +113,18 @@ function showSubmissionPane(teamid, flagid){
 function renderSubmissionPane(list, flag){
 	var pane = document.getElementById('submission-pane');
 		pane.innerHTML = '';
-	var h = document.createElement('h2');
-		h.innerText = '[' + flag.code + '] ' + flag.name;
+	var hf = document.createElement('h5');
+		hf.innerText = 'Flag ' + flag.code;
+	var h = document.createElement('h3');
+		h.innerText = flag.name;
 	var p = document.createElement('p');
 		p.innerText = flag.description;
+	var ps = document.createElement('p');
+		ps.innerText = 'Points: ' + flag.points;
+		pane.appendChild(hf);
 		pane.appendChild(h);
 		pane.appendChild(p);
+		pane.appendChild(ps);
 	if(flag.link){
 		var a = document.createElement('a');
 			a.href = flag.link;
@@ -110,15 +135,17 @@ function renderSubmissionPane(list, flag){
 	if(flag.answer === 'TYPE::JUDGED'){
 		var form = document.createElement('div');
 			form.classList.add('submission-form');
-		var ha = document.createElement('h3');
+		var ha = document.createElement('h5');
 			ha.innerText = 'Submission Form';
 		var password = document.createElement('input');
 			password.type = 'password';
-			password.placeholder = 'Team Password';
+			password.placeholder = 'Team Secret Key';
 		var textarea = document.createElement('textarea');
 			textarea.dataset.flag = flag.code;
+			textarea.classList.add('materialize-textarea');
 		var button = document.createElement('button');
 			button.innerText = 'Submit';
+			button.classList.add('btn', 'waves-effect', 'waves-light');
 		button.addEventListener('click', e => {
 			var ps = password.value;
 			var tx = textarea.value;
@@ -131,14 +158,15 @@ function renderSubmissionPane(list, flag){
 		form.appendChild(button);
 		pane.appendChild(form);
 	}
-	var hb = document.createElement('h3');
+	var hb = document.createElement('h5');
 		hb.innerText = 'Past Submissions';
 		pane.appendChild(hb);
 	if(list.length > 0){
 		for(var i = 0; i < list.length; i++){
 			var res = list[i];
 			var div = document.createElement('div');
-			var time = moment(res.timestamp).format('hh:mm A');
+			var dateObj = new Date(res.timestamp);
+			var time = moment(dateObj).format('hh:mm:ss A');
 			var pre = document.createElement('pre');
 				pre.innerText = res.answer;
 			var pd = document.createElement('p');
@@ -161,4 +189,6 @@ function renderSubmissionPane(list, flag){
 			pane.appendChild(div);
 	}
 	return pane;
+}
+
 }
