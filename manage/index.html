@@ -28,6 +28,8 @@
 	<body>
 
 		<div id="login-board">
+			<h1>Login</h1>
+			<p id="login-message">Please login to access the contest manager.</p>
 			<button id="login-button">Login</button>
 		</div>
 		
@@ -62,7 +64,8 @@
 					loginBoard.style.display = 'none';
 					main();
 				}).catch(err => {
-					console.error(err);
+					var loginMsg = document.getElementById('login-message');
+					loginMsg.innerText = err;
 				});
 			});
 
