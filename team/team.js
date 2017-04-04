@@ -7,8 +7,6 @@ var CTF_URL = 'http://acm-sinatra-vingkan.c9users.io/submission/';
 var currentRef = false;
 var currentListener = false;
 
-TEAM_ID = '-KgIunYPz9HUOTUcKjU7';
-
 getFlags().then(list => {
 	renderFlagPane(list);
 	var code = list[0].code;
@@ -121,9 +119,12 @@ function renderSubmissionPane(list, flag){
 		h.innerText = flag.name;
 	var p = document.createElement('p');
 		p.innerText = flag.description;
+	var ps = document.createElement('p');
+		ps.innerText = 'Points: ' + flag.points;
 		pane.appendChild(hf);
 		pane.appendChild(h);
 		pane.appendChild(p);
+		pane.appendChild(ps);
 	if(flag.link){
 		var a = document.createElement('a');
 			a.href = flag.link;
