@@ -219,8 +219,54 @@ function showAllPane(){
 		h.innerText = 'View All Flags';
 	var p = document.createElement('p');
 		p.innerText = 'Not currently available. view flags individually using the left pane.';
+
+	getFlags().then(list => {
+
+		var table = document.createElement('table');
+
+		var thead = document.createElement('thead');
+		var th1 = document.createElement('th');
+			th1.innerText = 'Code';
+			thead.appendChild(th1);
+		var th2 = document.createElement('th');
+			th2.innerText = 'Points';
+			thead.appendChild(th2);
+		var th3 = document.createElement('th');
+			th3.innerText = 'Flag';
+			thead.appendChild(th3);
+			table.appendChild(thead);
+
+		list.forEach(flag => {
+			var tr = document.createElement('tr');
+			var content = [
+				flag.code,
+				flag.points,
+				flag.name
+			];
+			content.forEach((cell, i) => {
+				var td = document.createElement('td');
+				if(i === 2){
+					var af = document.createElement('a');
+					af.target = '_blank';
+					af.href = flag.link;
+					af.innerText = flag.name;
+					td.appendChild(af);
+					tr.appendChild(td);
+				}
+				else{
+					td.innerText = cell;
+					tr.appendChild(td);
+				}
+			});
+			table.appendChild(tr);
+		});
+
 		pane.appendChild(h);
-		pane.appendChild(p);
+		//pane.appendChild(p);
+		pane.appendChild(table);
+
+	});
+
 	return pane;
 }
 
