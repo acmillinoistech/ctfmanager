@@ -1,3 +1,5 @@
+function main(){
+
 var CONTEST_ID = 'clarity2017'; // prompt('Enter Contest ID.');
 
 var db = firebase.database();
@@ -246,3 +248,5 @@ on(addTeam, 'click', (e) => {
 		name: 'New Team'
 	});
 });
+
+}
